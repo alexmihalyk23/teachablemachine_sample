@@ -7,6 +7,12 @@ cap  = cv2.VideoCapture(0)
 # Disable scientific notation for clarity
 np.set_printoptions(suppress=True)
 
+classesFile = "labels.txt"
+classNames = []
+# открываем наш файл coco
+with open(classesFile, 'rt') as f:  # t - текстовый режим
+    classNames = f.read().rstrip('\n').split(
+        '\n')
 # Load the model
 model = tensorflow.keras.models.load_model('keras_model.h5')
 
@@ -39,17 +45,9 @@ while True:
     # run the inference
     prediction = model.predict(data)
 
-    print("without mask: ", prediction[0][0])
-    print("with mask: ", prediction[0][1])
-
     im_np = np.asarray(image)
-    if prediction[0][0] >= 0.75:
-        cv2.putText(im_np, "No Mask", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-    elif prediction[0][1] >= 0.75:
-        cv2.putText(im_np, "With Mask", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-    else:
-        cv2.putText(im_np, "Not Found", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-
+    cv2.putText(im_np, classNames[prediction[0].argmax()][1:], (0, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
+    im_np = cv2.resize(im_np,(480,480))
     cv2.imshow("test", im_np)
     keyCode = cv2.waitKey(1)
 
